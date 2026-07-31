@@ -112,6 +112,18 @@ p+p{margin-top:var(--s2)}
 .cell:hover{border-top-color:var(--golden-sand);background:#fff}
 .cell .n{font-family:'Forum',Georgia,serif;font-size:30px;color:var(--golden-sand);line-height:1}
 .cell .m{font-size:13.5px;line-height:1.55;color:var(--espresso)}
+.cell.locked{min-height:132px}
+.cell.locked:hover{background:var(--pale-oat)}
+.blur{display:flex;flex-direction:column;gap:9px;margin-top:2px}
+.bar{display:block;height:8px;background:var(--ivory-glow);border-radius:1px}
+.locknote{
+  margin-top:var(--s4);display:inline-flex;align-items:center;gap:10px;
+  font-family:'Montserrat',system-ui,sans-serif;font-size:11px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--warm-clay);
+}
+.locknote:before{
+  content:"";width:26px;height:1px;background:var(--golden-sand);display:block;
+}
 .gridclose{
   margin-top:var(--s5);background:var(--pale-oat);border-left:3px solid var(--golden-sand);
   padding:28px 30px;font-family:'Forum',Georgia,serif;font-size:20px;line-height:1.48;
@@ -230,8 +242,10 @@ footer .brand{margin-top:14px;letter-spacing:.26em;font-size:10px;text-transform
 <section>
   <div class="wrap">
     <div class="dlbox rv">
+      <p class="eyebrow eb-clay" style="margin-bottom:var(--s3)">Everything is open now</p>
       <a class="btn btn-gold btn-lg" href="../AMG-Sixteen.pdf" download>Download Sixteen now</a>
       <p class="note">20 pages, A4, print ready. The scan page is fillable.</p>
+      <p class="note" style="margin-top:var(--s3)">All sixteen moments, all sixteen names, and the scan. Nothing else to enter, nothing else to wait for.</p>
     </div>
 
     <div class="read" style="margin-top:var(--s6)">
