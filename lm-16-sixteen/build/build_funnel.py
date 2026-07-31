@@ -1,0 +1,797 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+SIXTEEN - builds the whole funnel into docs/ for GitHub Pages.
+
+    docs/index.html            the opt-in page      -> /sixteen/
+    docs/thank-you/index.html  delivery + upsells   -> /sixteen/thank-you/
+    docs/scan/index.html       the live scan        -> /sixteen/scan/
+    docs/AMG-Sixteen.pdf       the guide
+
+Pages serves docs/ at the repo root, so the repo is named sixteen and the
+published paths match angiemarieglobal.com/sixteen exactly. This follows the
+per-asset repo convention already used by permission-audit and capacity-audit.
+
+One shared design system, one copy file, three pages, so nothing can drift.
+Every image is inlined as a base64 data URI, which means each page is a single
+self-contained file. It renders correctly wherever it is opened, not only when
+the sibling image files happen to be next to it.
+
+Usage: python3 build_funnel.py
+"""
+
+import base64
+import os
+import shutil
+
+import funnel_content as C
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+DOCS = os.path.abspath(os.path.join(HERE, "..", "..", "docs"))
+IMGS = DOCS
+PDF_SRC = os.path.abspath(os.path.join(HERE, "..", "dist", "AMG-Sixteen.pdf"))
+
+URLS = {"RECOGNISE_URL": C.RECOGNISE_URL, "BASELINE_URL": C.BASELINE_URL}
+
+
+def data_uri(name):
+    with open(os.path.join(IMGS, name), "rb") as f:
+        return "data:image/jpeg;base64," + base64.b64encode(f.read()).decode("ascii")
+
+
+# --------------------------------------------------------------------------- #
+# THE DESIGN SYSTEM
+# Recognise palette, de-pinked, locked 27 July 2026.
+# Retired and never reused: #945D36 #AF8B6C #E8CDAD #F7E3CB #FBF4E8
+# Type: Forum (title), Montserrat (subtitle uppercase tracked, and body).
+# Nothing here is a gradient. Every fill is solid.
+# --------------------------------------------------------------------------- #
+
+CSS = """
+:root{
+  --golden-sand:#D09E69; --deep-umber:#5D3520; --warm-clay:#8A6238;
+  --amber-ember:#C6792F; --sand-stone:#B7A184; --ivory-glow:#E6DAC2;
+  --oat-cream:#F2E9D5;   --pale-oat:#FBF7EE;  --espresso:#2A1711;
+  --umber-lift:#4E2C1B;  --umber-edge:#6D4229;
+  --s1:8px; --s2:16px; --s3:24px; --s4:36px; --s5:56px; --s6:88px;
+  --maxw:1120px; --readw:660px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  background:var(--pale-oat);color:var(--espresso);
+  font-family:'Montserrat',system-ui,-apple-system,sans-serif;font-weight:300;
+  font-size:17px;line-height:1.72;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+img{max-width:100%;height:auto;display:block}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 var(--s3)}
+.read{max-width:var(--readw)}
+h1,h2,h3,.serif{font-family:'Forum',Georgia,serif;font-weight:400;line-height:1.14}
+.eyebrow{
+  font-family:'Montserrat',sans-serif;font-weight:600;text-transform:uppercase;
+  letter-spacing:.32em;font-size:10.5px;line-height:1.6;
+}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.bars{display:flex;height:7px}
+.bars i{flex:1}
+.bars i:nth-child(1){background:var(--warm-clay)}
+.bars i:nth-child(2){background:var(--amber-ember)}
+.bars i:nth-child(3){background:var(--golden-sand)}
+.bars i:nth-child(4){background:var(--ivory-glow)}
+
+.rv{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s ease}
+.rv.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  text-decoration:none;cursor:pointer;border:0;text-align:center;
+  padding:20px 34px;font-family:'Montserrat',sans-serif;font-weight:600;
+  text-transform:uppercase;letter-spacing:.2em;font-size:11.5px;
+  transition:background .18s,color .18s,border-color .18s,transform .18s;
+}
+.btn:active{transform:translateY(1px)}
+.btn-solid{background:var(--deep-umber);color:var(--pale-oat);border-bottom:3px solid var(--golden-sand)}
+.btn-solid:hover{background:var(--warm-clay)}
+.btn-gold{background:var(--golden-sand);color:var(--deep-umber);border-bottom:3px solid var(--deep-umber)}
+.btn-gold:hover{background:var(--amber-ember);color:var(--pale-oat)}
+.btn-line{background:transparent;color:var(--deep-umber);border:1px solid var(--sand-stone)}
+.btn-line:hover{border-color:var(--golden-sand);color:var(--warm-clay)}
+.btn-lg{padding:23px 40px;font-size:12.5px}
+.full{width:100%}
+
+section{padding:var(--s6) 0}
+.dark{background:var(--deep-umber);color:var(--pale-oat)}
+.dark h2,.dark h3{color:var(--pale-oat)}
+.dark p{color:var(--ivory-glow)}
+.dark .eyebrow{color:var(--golden-sand)}
+.oat{background:var(--oat-cream)}
+h2{font-size:clamp(32px,5.4vw,52px);color:var(--deep-umber)}
+.hr{width:64px;height:2px;background:var(--golden-sand);border:0;margin-top:var(--s3)}
+p+p{margin-top:var(--s2)}
+.lede{font-family:'Forum',Georgia,serif;font-size:clamp(25px,3.6vw,38px);color:var(--deep-umber);line-height:1.32}
+.dark .lede{color:var(--pale-oat)}
+.after{margin-top:var(--s4)}
+.eb-clay{color:var(--warm-clay)}
+
+/* HERO */
+.hero{position:relative;background:var(--deep-umber)}
+.hero .shot{position:relative}
+.hero .shot img{width:100%}
+.hero .badge{
+  position:absolute;top:var(--s3);left:var(--s3);
+  background:var(--pale-oat);color:var(--deep-umber);
+  padding:9px 15px;border-bottom:2px solid var(--golden-sand);
+}
+.hero .strap{padding:var(--s5) var(--s3);text-align:center}
+.hero .strap h2{
+  font-size:clamp(30px,4.8vw,48px);color:var(--pale-oat);
+  max-width:820px;margin:0 auto;
+}
+.hero .strap p{color:var(--ivory-glow);margin-top:var(--s3);max-width:560px;margin-left:auto;margin-right:auto;font-size:16px}
+.hero .cta-row{margin-top:var(--s4);display:flex;justify-content:center}
+.hero .tiny{margin-top:var(--s3);color:var(--sand-stone);font-size:12.5px;letter-spacing:.04em}
+
+/* THE SIXTEEN GRID */
+.grid16{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-top:var(--s5)}
+.cell{
+  background:var(--pale-oat);padding:22px 20px 24px;
+  display:flex;flex-direction:column;gap:12px;min-height:150px;
+  border-top:2px solid var(--ivory-glow);transition:border-color .2s,background .2s;
+}
+.cell:hover{border-top-color:var(--golden-sand);background:#fff}
+.cell .n{font-family:'Forum',Georgia,serif;font-size:30px;color:var(--golden-sand);line-height:1}
+.cell .m{font-size:13.5px;line-height:1.55;color:var(--espresso)}
+.gridclose{
+  margin-top:var(--s5);background:var(--pale-oat);border-left:3px solid var(--golden-sand);
+  padding:28px 30px;font-family:'Forum',Georgia,serif;font-size:20px;line-height:1.48;
+  color:var(--deep-umber);max-width:820px;
+}
+
+/* THE LOOP CHAIN */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:var(--s6);align-items:center;margin-top:var(--s5)}
+.chain{display:grid;gap:2px}
+.link{background:var(--oat-cream);border-left:3px solid var(--ivory-glow);padding:15px 20px;display:flex;align-items:baseline;gap:16px}
+.link b{font-family:'Forum',Georgia,serif;font-size:19px;color:var(--golden-sand);min-width:26px;font-weight:400}
+.link span{font-size:15px;line-height:1.55}
+.link strong{font-weight:600}
+.link:last-child{border-left-color:var(--amber-ember);background:var(--ivory-glow)}
+.link:last-child span{color:var(--deep-umber)}
+.pull{font-family:'Forum',Georgia,serif;font-size:23px;line-height:1.42;color:var(--deep-umber);margin-top:var(--s4)}
+
+/* PAGE PREVIEWS */
+.pages{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--s3);margin-top:var(--s5);align-items:end}
+.pg img{box-shadow:0 18px 40px rgba(93,53,32,.18)}
+.pg:nth-child(1){transform:rotate(-2.2deg)}
+.pg:nth-child(2){transform:rotate(1.4deg) translateY(-14px)}
+.pg:nth-child(3){transform:rotate(-1deg) translateY(6px)}
+.pg:nth-child(4){transform:rotate(2deg) translateY(-8px)}
+.pg .cap{display:block;margin-top:16px;text-align:center;color:var(--warm-clay);font-size:10px;letter-spacing:.22em;text-transform:uppercase;font-weight:600}
+
+/* COUNTS */
+.gets{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:var(--s5)}
+.get{background:var(--pale-oat);padding:var(--s4) var(--s3);border-top:3px solid var(--golden-sand)}
+.get .num{font-family:'Forum',Georgia,serif;font-size:54px;color:var(--deep-umber);line-height:1}
+.get .lbl{margin-top:14px;font-size:15px;line-height:1.6}
+
+/* CAPTURE */
+.capture{background:var(--deep-umber);color:var(--pale-oat);padding:var(--s6) 0}
+.capture h2{color:var(--pale-oat)}
+.capture p{color:var(--ivory-glow)}
+.capture .eyebrow{color:var(--golden-sand)}
+.capgrid{display:grid;grid-template-columns:1fr 1fr;gap:var(--s6);align-items:center}
+.formcard{background:var(--pale-oat);padding:8px}
+.formcard iframe{width:100%;border:0;display:block;min-height:430px}
+.fallback{padding:var(--s4) var(--s3)}
+.fallback .eyebrow{color:var(--sand-stone);font-size:9.5px}
+.fallback label{display:block;margin:0 0 8px;color:var(--warm-clay);font-weight:600;text-transform:uppercase;letter-spacing:.2em;font-size:10.5px}
+.fallback input{
+  width:100%;padding:16px;margin-bottom:var(--s3);border:1px solid var(--sand-stone);
+  background:#fff;color:var(--espresso);font-family:'Montserrat',sans-serif;font-size:16px;
+}
+.fallback input:focus{outline:2px solid var(--golden-sand);border-color:var(--golden-sand)}
+
+/* AUTHOR */
+.who{display:grid;grid-template-columns:.85fr 1.15fr;gap:var(--s6);align-items:center}
+.who img{border-bottom:4px solid var(--golden-sand)}
+.who .sig{font-family:'Forum',Georgia,serif;font-size:23px;color:var(--deep-umber);margin-top:var(--s3)}
+
+/* THE TWO UPSELLS */
+.nextrow{display:grid;grid-template-columns:1fr 1fr;gap:var(--s3);margin-top:var(--s5)}
+.door{
+  background:var(--pale-oat);border-top:3px solid var(--golden-sand);
+  padding:var(--s4) var(--s4) var(--s5);display:flex;flex-direction:column;
+}
+.door .step{color:var(--sand-stone);font-weight:600;text-transform:uppercase;letter-spacing:.3em;font-size:9.5px}
+.door h3{font-size:clamp(28px,3.4vw,38px);color:var(--deep-umber);margin-top:14px}
+.door .line{font-family:'Forum',Georgia,serif;font-size:19px;color:var(--warm-clay);margin-top:12px;line-height:1.4}
+.door .body{font-size:15px;line-height:1.66;margin-top:var(--s3);flex:1}
+.door .btn{margin-top:var(--s4)}
+
+/* THANK YOU */
+.tyhead{background:var(--deep-umber);color:var(--pale-oat);padding:var(--s6) 0 var(--s5);text-align:center}
+.tyhead .eyebrow{color:var(--golden-sand)}
+.tyhead h1{font-size:clamp(42px,7vw,74px);color:var(--pale-oat);margin-top:var(--s2)}
+.tyhead p{color:var(--ivory-glow);max-width:600px;margin:var(--s3) auto 0}
+.dlbox{background:var(--oat-cream);border-left:3px solid var(--golden-sand);padding:var(--s5) var(--s4);text-align:center;margin-top:var(--s5)}
+.dlbox .note{color:var(--warm-clay);font-size:13px;margin-top:var(--s2);letter-spacing:.04em}
+.steps{counter-reset:s;margin-top:var(--s4);display:grid;gap:2px}
+.step-i{background:var(--oat-cream);padding:18px 22px;display:flex;gap:16px;align-items:baseline}
+.step-i b{font-family:'Forum',Georgia,serif;font-size:20px;color:var(--golden-sand);font-weight:400;min-width:24px}
+.step-i span{font-size:15.5px;line-height:1.6}
+
+footer{background:var(--deep-umber);color:var(--sand-stone);text-align:center;padding:var(--s5) 0 var(--s4)}
+footer .eyebrow{color:var(--golden-sand);letter-spacing:.34em;font-size:11px}
+footer .brand{margin-top:14px;letter-spacing:.26em;font-size:10px;text-transform:uppercase;font-weight:600}
+
+.sticky{position:fixed;left:0;right:0;bottom:0;z-index:50;display:none;background:var(--deep-umber);border-top:2px solid var(--golden-sand);padding:10px 14px}
+.sticky .btn{width:100%;padding:16px 18px}
+.sticky.on{display:none}
+@media (max-width:940px){.sticky.on{display:block}}
+
+@media (max-width:940px){
+  .split,.capgrid,.who,.nextrow{grid-template-columns:1fr;gap:var(--s5)}
+  .grid16{grid-template-columns:repeat(2,1fr)}
+  .pages{grid-template-columns:repeat(2,1fr)}
+  .gets{grid-template-columns:1fr}
+  .who img{max-width:420px}
+}
+@media (max-width:560px){
+  section{padding:var(--s5) 0}
+  .grid16{grid-template-columns:1fr}
+  .pg:nth-child(n){transform:none}
+  .hero .strap{padding:var(--s4) var(--s3)}
+  .btn{width:100%;padding:18px 22px}
+  body{padding-bottom:78px}
+}
+""".strip()
+
+FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com">\n'
+         '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
+         '<link href="https://fonts.googleapis.com/css2?family=Forum&'
+         'family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">')
+
+REVEAL_JS = """
+var rv=document.querySelectorAll('.rv');
+if('IntersectionObserver' in window){
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){
+    if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},
+    {rootMargin:'0px 0px -6% 0px',threshold:0.05});
+  rv.forEach(function(el){io.observe(el);});
+}else{rv.forEach(function(el){el.classList.add('in');});}
+""".strip()
+
+
+def head(title, desc, canonical, og_img=None, noindex=False):
+    robots = '<meta name="robots" content="noindex, follow">\n' if noindex else ""
+    og = (f'<meta property="og:image" content="{og_img}">\n' if og_img else "")
+    return f"""<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{title}</title>
+<meta name="description" content="{desc}">
+{robots}<link rel="canonical" href="{canonical}">
+<meta property="og:type" content="website">
+<meta property="og:title" content="{title}">
+<meta property="og:description" content="{desc}">
+{og}<meta property="og:locale" content="en_AU">
+<meta name="twitter:card" content="summary_large_image">
+{FONTS}
+<style>
+/* SIXTEEN funnel. Generated by lm-16-sixteen/build/build_funnel.py.
+   Do not hand edit. Edit funnel_content.py or the builder and rerun. */
+{CSS}
+</style>
+</head>
+<body>
+"""
+
+
+def upsells(base=""):
+    cards = ""
+    for u in C.UPSELLS:
+        cards += f"""
+      <div class="door rv">
+        <p class="step">Step {u['step']}</p>
+        <h3>{u['name']}</h3>
+        <p class="line">{u['line']}</p>
+        <p class="body">{u['body']}</p>
+        <a class="btn btn-solid" href="{URLS[u['url_key']]}">{u['cta']}</a>
+      </div>"""
+    return f"""
+<section class="oat">
+  <div class="wrap">
+    <p class="eyebrow eb-clay rv">{C.NEXT_EYEBROW}</p>
+    <h2 class="rv" style="margin-top:var(--s2)">{C.NEXT_TITLE}</h2>
+    <hr class="hr rv">
+    <p class="read rv after">{C.NEXT_LEAD}</p>
+    <div class="nextrow">{cards}
+    </div>
+  </div>
+</section>
+"""
+
+
+def foot(extra_js=""):
+    js = REVEAL_JS + ("\n" + extra_js if extra_js else "")
+    return f"""
+<footer>
+  <div class="wrap">
+    <p class="eyebrow">{C.CLOSING}</p>
+    <p class="brand">{C.BRAND}</p>
+  </div>
+</footer>
+<script>
+(function(){{'use strict';
+{js}
+}})();
+</script>
+</body>
+</html>
+"""
+
+
+# --------------------------------------------------------------------------- #
+# PAGE 1 - THE OPT IN
+# --------------------------------------------------------------------------- #
+
+def build_index():
+    hero = data_uri("sixteen-hero.jpg")
+    who = data_uri("angie-detail.jpg")
+
+    cells = "".join(
+        f'\n      <div class="cell rv"><p class="n">{i + 1:02d}</p>'
+        f'<p class="m">{m}</p></div>'
+        for i, m in enumerate(C.MOMENTS))
+
+    problem = ""
+    for kind, txt in C.PROBLEM:
+        cls = ' class="lede"' if kind == "lede" else ' class="after"' if not problem else ""
+        problem += f"\n      <p{cls}>{txt}</p>"
+
+    chain = "".join(
+        f'\n        <div class="link"><b>{n}</b><span>{t}</span></div>'
+        for n, t in C.LOOP_CHAIN)
+
+    previews = "".join(
+        f'\n      <figure class="pg rv"><img src="{data_uri(f)}" width="520" height="735" '
+        f'alt="{alt}" decoding="async"><span class="cap">{cap}</span></figure>'
+        for f, cap, alt in C.PREVIEWS)
+
+    counts = "".join(
+        f'\n      <div class="get rv"><p class="num">{n}</p><p class="lbl">{t}</p></div>'
+        for n, t in C.COUNTS)
+
+    fields = "\n".join(
+        f'            <label for="{f["id"]}">{f["label"]}</label>\n'
+        f'            <input id="{f["id"]}" name="{f["id"]}" type="{f["type"]}" '
+        f'autocomplete="{f["autocomplete"]}"{" required" if f["required"] else ""}>'
+        for f in C.FIELDS)
+
+    html = head(
+        f"{C.TITLE} | {C.STRAP}",
+        "A free guide from Angie Marie Global. All sixteen patterns, twenty pages. "
+        "Read the moment first. The name is at the bottom of every page.",
+        f"{C.PAGES}/",
+        og_img=f"{C.PAGES}/sixteen-hero.jpg",
+    )
+
+    html += f"""
+<header class="hero">
+  <h1 class="sr">{C.TITLE}. {C.STRAP}.</h1>
+  <div class="shot">
+    <img src="{hero}" width="1280" height="720" fetchpriority="high"
+         alt="Sixteen. Golden hour on the sand beneath the cliffs.">
+    <p class="badge eyebrow">{C.BADGE}</p>
+  </div>
+  <div class="bars"><i></i><i></i><i></i><i></i></div>
+  <div class="strap">
+    <h2 class="serif">{C.STRAP}</h2>
+    <p>{C.HERO_LINE}</p>
+    <div class="cta-row"><a class="btn btn-gold btn-lg" href="#get">{C.HERO_CTA}</a></div>
+    <p class="tiny">{C.HERO_TINY}</p>
+  </div>
+</header>
+
+<section>
+  <div class="wrap"><div class="read rv">{problem}
+    </div>
+  </div>
+</section>
+
+<section class="oat">
+  <div class="wrap">
+    <p class="eyebrow eb-clay rv">{C.GRID_EYEBROW}</p>
+    <h2 class="rv" style="margin-top:var(--s2)">{C.GRID_TITLE}</h2>
+    <hr class="hr rv">
+    <p class="read rv after">{C.GRID_LEAD}</p>
+    <div class="grid16">{cells}
+    </div>
+    <p class="gridclose rv">{C.GRID_CLOSE}</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="eyebrow eb-clay rv">{C.LOOP_EYEBROW}</p>
+    <h2 class="rv" style="margin-top:var(--s2)">{C.LOOP_TITLE}</h2>
+    <hr class="hr rv">
+    <div class="split">
+      <div class="read rv">
+        <p>{C.LOOP_BODY[0]}</p>
+        <p>{C.LOOP_BODY[1]}</p>
+        <p class="pull">{C.LOOP_PULL}</p>
+      </div>
+      <div class="chain rv" aria-label="The loop">{chain}
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="oat">
+  <div class="wrap">
+    <p class="eyebrow eb-clay rv">{C.INSIDE_EYEBROW}</p>
+    <h2 class="rv" style="margin-top:var(--s2)">{C.INSIDE_TITLE}</h2>
+    <hr class="hr rv">
+    <p class="read rv after">{C.INSIDE_LEAD}</p>
+    <div class="pages">{previews}
+    </div>
+    <div class="gets">{counts}
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="split" style="margin-top:0">
+      <div class="read rv">
+        <p class="eyebrow eb-clay">{C.SCAN_TEASE_EYEBROW}</p>
+        <h2 style="margin-top:var(--s2)">{C.SCAN_TEASE_TITLE}</h2>
+        <hr class="hr">
+        <p class="after">{C.SCAN_TEASE_BODY[0]}</p>
+        <p>{C.SCAN_TEASE_BODY[1]}</p>
+        <a class="btn btn-line" style="margin-top:var(--s4)" href="{C.SCAN_PATH}">{C.SCAN_TEASE_CTA}</a>
+      </div>
+      <figure class="pg rv" style="transform:none">
+        <img src="{data_uri('preview-scan.jpg')}" width="520" height="735"
+             alt="The scan page of Sixteen." decoding="async">
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section class="capture" id="get">
+  <div class="wrap">
+    <div class="capgrid">
+      <div class="rv">
+        <p class="eyebrow">{C.CAPTURE_EYEBROW}</p>
+        <h2 style="margin-top:var(--s2)">{C.CAPTURE_TITLE}</h2>
+        <hr class="hr">
+        <p class="after">{C.CAPTURE_BODY[0]}</p>
+        <p>{C.CAPTURE_BODY[1]}</p>
+      </div>
+      <div class="formcard rv">
+        <!-- ==================================================================
+             GHL FORM EMBED
+             Replace this whole .fallback block with the GoHighLevel form embed
+             for "{C.GHL_FORM_NAME}". Sub-account: {C.BRAND}.
+             Tags on submit:  {C.GHL_TAGS}  plus  src-{{{{source}}}}
+             Workflow:        {C.GHL_WORKFLOW}
+             Redirect after submit:  {C.THANKS_URL}
+             Keep the iframe inside .formcard so the styling holds.
+             ================================================================== -->
+        <div class="fallback">
+          <p class="eyebrow">Fallback form. Replace with the GHL embed before launch.</p>
+          <form id="sixteen-form" method="post" action="{C.GHL_WEBHOOK}" style="margin-top:var(--s3)">
+{fields}
+            <input type="hidden" name="tags" value="{C.GHL_TAGS}">
+            <input type="hidden" id="src" name="source" value="direct">
+            <input type="hidden" name="redirect" value="{C.THANKS_URL}">
+            <button class="btn btn-solid full" type="submit">{C.HERO_CTA}</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="who">
+      <img class="rv" src="{who}" width="440" height="551"
+           alt="Angie Marie on the sand at golden hour." decoding="async">
+      <div class="rv">
+        <p class="eyebrow eb-clay">{C.WHO_EYEBROW}</p>
+        <h2 style="margin-top:var(--s2)">{C.AUTHOR}</h2>
+        <hr class="hr">
+        <p class="after">{C.WHO_BODY[0]}</p>
+        <p>{C.WHO_BODY[1]}</p>
+        <p class="sig">{C.TRILOGY}</p>
+      </div>
+    </div>
+  </div>
+</section>
+"""
+    html += upsells()
+    html += f"""
+<div class="sticky" id="sticky">
+  <a class="btn btn-gold" href="#get">{C.HERO_CTA}</a>
+</div>
+"""
+    html += foot(STICKY_JS + "\n" + SRC_JS)
+    write("index.html", html)
+
+
+STICKY_JS = """
+var sticky=document.getElementById('sticky'),cap=document.getElementById('get');
+if(sticky&&cap){
+  var onScroll=function(){
+    var r=cap.getBoundingClientRect();
+    var past=window.scrollY>window.innerHeight*0.8;
+    var at=r.top<window.innerHeight*0.9&&r.bottom>0;
+    sticky.classList.toggle('on',past&&!at);
+  };
+  window.addEventListener('scroll',onScroll,{passive:true});onScroll();
+}
+""".strip()
+
+SRC_JS = """
+/* traffic source, stamped for GHL. ?src=ig-reel | fb | email | substack | bio */
+var q=new URLSearchParams(window.location.search);
+var s=(q.get('src')||q.get('utm_source')||'direct').toLowerCase()
+        .replace(/[^a-z0-9-]/g,'-').slice(0,24);
+var f=document.getElementById('src'); if(f){f.value=s;}
+var t=document.querySelector('input[name="tags"]'); if(t){t.value=t.value+',src-'+s;}
+""".strip()
+
+
+# --------------------------------------------------------------------------- #
+# PAGE 2 - THANK YOU
+# --------------------------------------------------------------------------- #
+
+def build_thanks():
+    steps = "".join(
+        f'\n      <div class="step-i rv"><b>{i + 1:02d}</b><span>{t}</span></div>'
+        for i, t in enumerate(C.TY_NEXT))
+
+    html = head(
+        f"{C.TY_TITLE} | {C.TITLE}",
+        "Sixteen is on its way. Download it here, then run the scan.",
+        C.THANKS_URL,
+        noindex=True,
+    )
+    html += f"""
+<div class="tyhead">
+  <div class="wrap">
+    <p class="eyebrow">{C.TY_BADGE}</p>
+    <h1>{C.TY_TITLE}</h1>
+    <p>{C.TY_LEAD}</p>
+  </div>
+</div>
+<div class="bars"><i></i><i></i><i></i><i></i></div>
+
+<section>
+  <div class="wrap">
+    <div class="dlbox rv">
+      <a class="btn btn-gold btn-lg" href="../{C.PDF_FILE}" download>{C.TY_DL}</a>
+      <p class="note">{C.TY_DL_NOTE}</p>
+    </div>
+
+    <div class="read" style="margin-top:var(--s6)">
+      <p class="eyebrow eb-clay rv">{C.TY_NEXT_TITLE}</p>
+      <div class="steps">{steps}
+      </div>
+      <a class="btn btn-line rv" style="margin-top:var(--s4)" href="../{C.SCAN_PATH}">{C.TY_SCAN_CTA}</a>
+    </div>
+  </div>
+</section>
+
+<section class="dark">
+  <div class="wrap">
+    <div class="read">
+      <p class="eyebrow rv">{C.TY_AUDIT_EYEBROW}</p>
+      <h2 class="rv" style="margin-top:var(--s2)">{C.TY_AUDIT_TITLE}</h2>
+      <hr class="hr rv">
+      <p class="rv after">{C.TY_AUDIT_BODY}</p>
+      <a class="btn btn-gold rv" style="margin-top:var(--s4)" href="{C.AUDIT_URL}">{C.TY_AUDIT_CTA}</a>
+    </div>
+  </div>
+</section>
+"""
+    html += upsells()
+    html += foot()
+    write(os.path.join("thank-you", "index.html"), html)
+
+
+# --------------------------------------------------------------------------- #
+# PAGE 3 - THE LIVE SCAN
+# --------------------------------------------------------------------------- #
+
+SCAN_CSS = """
+.grid{margin-top:var(--s4);display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.tile{
+  background:var(--oat-cream);border:1px solid var(--ivory-glow);border-left:3px solid var(--ivory-glow);
+  padding:14px 14px 16px;cursor:pointer;text-align:left;font-family:'Montserrat',sans-serif;
+  font-weight:300;color:var(--espresso);display:flex;flex-direction:column;gap:10px;min-height:118px;
+  transition:border-color .16s,background .16s,transform .16s;
+}
+.tile:hover{border-color:var(--sand-stone);transform:translateY(-2px)}
+.tile:focus-visible{outline:2px solid var(--golden-sand);outline-offset:2px}
+.tile .n{font-family:'Forum',Georgia,serif;font-size:25px;color:var(--golden-sand);line-height:1}
+.tile .m{font-size:12.5px;line-height:1.5;color:var(--warm-clay)}
+.tile .box{width:19px;height:19px;border:1px solid var(--sand-stone);background:var(--pale-oat);display:flex;align-items:center;justify-content:center;flex:none}
+.tile .box svg{width:12px;height:12px;display:none}
+.tile .top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.tile[aria-pressed="true"]{background:#fff;border-left-color:var(--amber-ember)}
+.tile[aria-pressed="true"] .box{background:var(--deep-umber);border-color:var(--deep-umber)}
+.tile[aria-pressed="true"] .box svg{display:block}
+.tile[aria-pressed="true"] .n{color:var(--amber-ember)}
+.counter{margin-top:var(--s4);display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.counter .num{font-family:'Forum',Georgia,serif;font-size:48px;color:var(--deep-umber);background:var(--oat-cream);border-bottom:3px solid var(--golden-sand);min-width:92px;text-align:center;padding:6px 10px 2px;line-height:1.1}
+.counter .said{font-family:'Forum',Georgia,serif;font-size:17px;color:var(--warm-clay);flex:1;min-width:260px;line-height:1.5}
+.names input{width:100%;border:0;border-bottom:1px solid var(--sand-stone);background:transparent;padding:12px 2px;margin-bottom:8px;font-family:'Forum',Georgia,serif;font-size:19px;color:var(--deep-umber)}
+.names input::placeholder{color:var(--sand-stone);font-size:15px}
+.names input:focus{outline:0;border-bottom-color:var(--golden-sand)}
+.clusters{margin-top:var(--s4);display:grid;grid-template-columns:1fr 1fr;gap:2px}
+.cluster{background:var(--oat-cream);padding:16px 18px;border-left:3px solid var(--ivory-glow);display:flex;align-items:baseline;justify-content:space-between;gap:14px;transition:background .18s,border-color .18s}
+.cluster .nm{font-weight:600;letter-spacing:.14em;text-transform:uppercase;font-size:11.5px;color:var(--deep-umber)}
+.cluster .num{font-size:13px;color:var(--sand-stone);white-space:nowrap}
+.cluster[data-state="part"]{border-left-color:var(--golden-sand)}
+.cluster[data-state="part"] .num{color:var(--warm-clay)}
+.cluster[data-state="lit"]{background:var(--deep-umber);border-left-color:var(--amber-ember)}
+.cluster[data-state="lit"] .nm{color:var(--pale-oat)}
+.cluster[data-state="lit"] .num{color:var(--golden-sand)}
+.verdict{margin-top:var(--s3);background:var(--oat-cream);border-left:3px solid var(--golden-sand);padding:26px 28px;font-family:'Forum',Georgia,serif;font-size:19px;color:var(--deep-umber);line-height:1.5}
+.acts{margin-top:var(--s4);display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:940px){.grid{grid-template-columns:repeat(2,1fr)}.clusters,.acts{grid-template-columns:1fr}}
+@media print{.tyhead,footer,.acts,.bars,section.oat{display:none}body{background:#fff}.tile .m{display:none}.grid{grid-template-columns:repeat(8,1fr);gap:6px}}
+""".strip()
+
+
+def build_scan():
+    moments_js = ",\n    ".join(f'"{m}"' for m in C.MOMENTS)
+    clusters_js = ",\n    ".join(
+        "{nm:\"%s\",members:[%s]}" % (nm, ", ".join(str(n) for n in mem))
+        for nm, mem in C.CLUSTERS)
+
+    html = head(
+        f"{C.SC_TITLE} | {C.TITLE} | {C.BRAND}",
+        "Tick the moments that were yours. The clusters light up on their own.",
+        f"{C.PAGES}/{C.SCAN_PATH}",
+        noindex=True,
+    )
+    html = html.replace("</style>", SCAN_CSS + "\n</style>")
+    html += f"""
+<div class="tyhead" style="padding:var(--s5) 0 var(--s4)">
+  <div class="wrap">
+    <p class="eyebrow">{C.SC_EYEBROW}</p>
+    <h1 style="font-size:clamp(38px,6.4vw,62px)">{C.SC_TITLE}</h1>
+    <p>{C.SC_LEAD}</p>
+  </div>
+</div>
+<div class="bars"><i></i><i></i><i></i><i></i></div>
+
+<section>
+  <div class="wrap">
+    <h2>{C.SC_H1}</h2>
+    <hr class="hr">
+    <p style="margin-top:var(--s3)">{C.SC_H1_LEAD}</p>
+
+    <div class="grid" id="grid" role="group" aria-label="The sixteen"></div>
+
+    <div class="counter">
+      <p class="num" id="count" aria-live="polite">0</p>
+      <p class="said">{C.SC_COUNT_SAID}</p>
+    </div>
+
+    <div class="names">
+      <p style="margin-top:var(--s4)">{C.SC_NAMES_LEAD}</p>
+      <input type="text" id="n1" placeholder="One" maxlength="60" autocomplete="off">
+      <input type="text" id="n2" placeholder="Two" maxlength="60" autocomplete="off">
+      <input type="text" id="n3" placeholder="Three" maxlength="60" autocomplete="off">
+    </div>
+
+    <h2 style="margin-top:var(--s6)">{C.SC_CLUSTER_TITLE}</h2>
+    <hr class="hr">
+    <p style="margin-top:var(--s3)">{C.SC_CLUSTER_LEAD}</p>
+    <div class="clusters" id="clusters"></div>
+    <div class="verdict" id="verdict">{C.SC_VERDICT}</div>
+
+    <div class="acts">
+      <a class="btn btn-solid" href="{C.AUDIT_URL}">{C.TY_AUDIT_CTA}</a>
+      <button class="btn btn-line" type="button" id="printbtn">{C.SC_PRINT}</button>
+    </div>
+  </div>
+</section>
+"""
+    html += upsells()
+    html += foot(f"""
+var MOMENTS=[
+    {moments_js}
+];
+var CLUSTERS=[
+    {clusters_js}
+];
+var TICK='<svg viewBox="0 0 24 24" fill="none" stroke="#FBF7EE" stroke-width="3.2"'
+       +' stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9.5 18 20 6"/></svg>';
+var picked={{}},grid=document.getElementById('grid'),box=document.getElementById('clusters'),
+    countEl=document.getElementById('count'),vEl=document.getElementById('verdict'),
+    BASE=vEl.textContent.trim();
+function pad(n){{return (n<10?'0':'')+n;}}
+MOMENTS.forEach(function(m,i){{
+  var n=i+1,b=document.createElement('button');
+  b.type='button';b.className='tile';b.setAttribute('aria-pressed','false');
+  b.setAttribute('aria-label','Number '+pad(n)+'. '+m);
+  b.innerHTML='<span class="top"><span class="n">'+pad(n)+'</span>'
+             +'<span class="box">'+TICK+'</span></span><span class="m">'+m+'</span>';
+  b.addEventListener('click',function(){{
+    picked[n]=!picked[n];
+    b.setAttribute('aria-pressed',picked[n]?'true':'false');
+    recalc();
+  }});
+  grid.appendChild(b);
+}});
+CLUSTERS.forEach(function(c,i){{
+  var d=document.createElement('div');
+  d.className='cluster';d.id='cl'+i;d.setAttribute('data-state','off');
+  d.innerHTML='<span class="nm">'+c.nm+'</span><span class="num">'
+             +c.members.map(pad).join(' &middot; ')+'</span>';
+  box.appendChild(d);
+}});
+function recalc(){{
+  var total=0,k; for(k in picked){{if(picked[k]){{total++;}}}}
+  countEl.textContent=total;
+  var lit=[];
+  CLUSTERS.forEach(function(c,i){{
+    var hits=c.members.filter(function(n){{return picked[n];}}).length,st='off';
+    if(hits===c.members.length){{st='lit';lit.push(c.nm);}}
+    else if(hits>=2){{st='part';}}
+    document.getElementById('cl'+i).setAttribute('data-state',st);
+  }});
+  if(lit.length===1){{
+    vEl.textContent=lit[0]+' is whole. That is not three problems. That is one loop, '
+      +'wearing three costumes, and it has been running the year.';
+  }}else if(lit.length>1){{
+    vEl.textContent=lit.slice(0,-1).join(', ')+' and '+lit[lit.length-1]
+      +' are whole. More than one loop is not worse news. It is a clearer map.';
+  }}else{{vEl.textContent=BASE;}}
+}}
+document.getElementById('printbtn').addEventListener('click',function(){{window.print();}});
+recalc();
+""")
+    write(os.path.join("scan", "index.html"), html)
+
+
+# --------------------------------------------------------------------------- #
+
+def write(rel, html):
+    path = os.path.join(DOCS, rel)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(html)
+    print(f"  {rel:28s} {os.path.getsize(path) / 1024:7.1f} KB")
+
+
+def main():
+    os.makedirs(DOCS, exist_ok=True)
+    print("building the Sixteen funnel into docs/")
+    build_index()
+    build_thanks()
+    build_scan()
+    if os.path.exists(PDF_SRC):
+        shutil.copy2(PDF_SRC, os.path.join(DOCS, C.PDF_FILE))
+        print(f"  {C.PDF_FILE:28s} "
+              f"{os.path.getsize(os.path.join(DOCS, C.PDF_FILE)) / 1024:7.1f} KB")
+    else:
+        print(f"  WARNING: {PDF_SRC} not found. Run build_sixteen.py first.")
+    print("\n  routing")
+    print(f"    audit      {C.AUDIT_URL}")
+    print(f"    recognise  {C.RECOGNISE_URL}")
+    print(f"    baseline   {C.BASELINE_URL}")
+    print(f"    pages      {C.PAGES}/")
+
+
+if __name__ == "__main__":
+    main()
