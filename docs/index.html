@@ -163,9 +163,15 @@ p+p{margin-top:var(--s2)}
 .capture .eyebrow{color:var(--golden-sand)}
 .capgrid{display:grid;grid-template-columns:1fr 1fr;gap:var(--s6);align-items:center}
 /* The GHL embed lives in here. Style the form itself inside GHL, not here:
-   nothing on this page can reach inside a cross origin iframe. Pale oat behind
-   it so a transparent GHL form sits on brand, and a white one reads as a card
-   with an oat frame either way. */
+   nothing on this page can reach inside a cross origin iframe.
+
+   THE FORM CARD CARRIES NO .rv REVEAL, AND IT NEVER SHOULD.
+   .rv starts an element at opacity 0 with a transform, which puts it on its own
+   compositing layer. A cross origin iframe inside that layer loads its document
+   and then never paints: the element measures correctly, reports opacity 1 and
+   visibility visible, and shows a blank rectangle. Anything that forces a
+   re-composite makes it appear, which is why it looked intermittent. The form is
+   the conversion element. It arrives with the page, not on a scroll cue. */
 .formcard{background:transparent;padding:0}
 /* HEIGHT. form_embed.js measures the form and sets an inline height, 525px on
    this four field form. That inline style beats this rule, so min-height is
@@ -361,7 +367,7 @@ footer .brand{margin-top:14px;letter-spacing:.26em;font-size:10px;text-transform
         <p class="after">Twenty pages, print ready, yours to keep. A4, and it works on a phone.</p>
         <p>One email with the guide. Nothing shared with anyone, and you can leave the list any time.</p>
       </div>
-      <div class="formcard rv">
+      <div class="formcard">
         <!-- ==================================================================
              GHL FORM EMBED, live since 31 July 2026.
              Form:      "LM 16 · Sixteen"  id pbJlsgtoTV05wrLI67gj
