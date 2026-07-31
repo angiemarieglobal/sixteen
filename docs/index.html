@@ -461,12 +461,27 @@ if(sticky&&cap){
   };
   window.addEventListener('scroll',onScroll,{passive:true});onScroll();
 }
+var THANKS="https://angiemarieglobal.github.io/sixteen/thank-you/";
 /* traffic source, stamped for GHL. ?src=ig-reel | fb | email | substack | bio */
 var q=new URLSearchParams(window.location.search);
 var s=(q.get('src')||q.get('utm_source')||'direct').toLowerCase()
         .replace(/[^a-z0-9-]/g,'-').slice(0,24);
 var f=document.getElementById('src'); if(f){f.value=s;}
 var t=document.querySelector('input[name="tags"]'); if(t){t.value=t.value+',src-'+s;}
+
+/* THE FALLBACK HANDOFF.
+   While the GHL embed is not in yet, the button still has to open the gate,
+   otherwise the page ends in a dead end. Native validation runs first, so the
+   required fields must be filled before this fires. Nothing is posted anywhere
+   and nothing is put in the URL. The moment the GHL embed replaces the
+   .fallback block, this handler goes with it and GHL owns the redirect. */
+var form=document.getElementById('sixteen-form');
+if(form){
+  form.addEventListener('submit',function(e){
+    e.preventDefault();
+    window.location.href=THANKS;
+  });
+}
 })();
 </script>
 </body>
