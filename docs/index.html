@@ -162,16 +162,14 @@ p+p{margin-top:var(--s2)}
 .capture p{color:var(--ivory-glow)}
 .capture .eyebrow{color:var(--golden-sand)}
 .capgrid{display:grid;grid-template-columns:1fr 1fr;gap:var(--s6);align-items:center}
-.formcard{background:var(--pale-oat);padding:8px}
-.formcard iframe{width:100%;border:0;display:block;min-height:430px}
-.fallback{padding:var(--s4) var(--s3)}
-.fallback .eyebrow{color:var(--sand-stone);font-size:9.5px}
-.fallback label{display:block;margin:0 0 8px;color:var(--warm-clay);font-weight:600;text-transform:uppercase;letter-spacing:.2em;font-size:10.5px}
-.fallback input{
-  width:100%;padding:16px;margin-bottom:var(--s3);border:1px solid var(--sand-stone);
-  background:#fff;color:var(--espresso);font-family:'Montserrat',sans-serif;font-size:16px;
-}
-.fallback input:focus{outline:2px solid var(--golden-sand);border-color:var(--golden-sand)}
+/* The GHL embed lives in here. Style the form itself inside GHL, not here:
+   nothing on this page can reach inside a cross origin iframe. Pale oat behind
+   it so a transparent GHL form sits on brand, and a white one reads as a card
+   with an oat frame either way. */
+.formcard{background:var(--pale-oat);padding:10px}
+.formcard iframe{width:100%;border:0;display:block;min-height:560px;background:transparent}
+.nojs{padding:var(--s4);text-align:center}
+.nojs a{color:var(--deep-umber);font-weight:600}
 
 /* AUTHOR */
 .who{display:grid;grid-template-columns:.85fr 1.15fr;gap:var(--s6);align-items:center}
@@ -360,31 +358,52 @@ footer .brand{margin-top:14px;letter-spacing:.26em;font-size:10px;text-transform
       </div>
       <div class="formcard rv">
         <!-- ==================================================================
-             GHL FORM EMBED
-             Replace this whole .fallback block with the GoHighLevel form embed
-             for "LM 16 · Sixteen". Sub-account: Angie Marie Global.
-             Tags on submit:  lm-sixteen,doorway-baseline  plus  src-{{source}}
-             Workflow:        LM16 · Sixteen · Deliver
-             Redirect after submit:  https://angiemarieglobal.github.io/sixteen/thank-you/
-             Keep the iframe inside .formcard so the styling holds.
+             GHL FORM EMBED, live since 31 July 2026.
+             Form:      "LM 16 · Sixteen"  id AZ81nybTLiPN4tA0wXPe
+             Account:   Angie Marie Global
+             The three settings below live INSIDE GHL, not in this file:
+               Redirect on submit  https://angiemarieglobal.github.io/sixteen/thank-you/
+               Tags on submit      lm-sixteen,doorway-baseline  plus  src-<source>
+               Workflow            LM16 · Sixteen · Deliver
+             The traffic source is appended to the iframe src by the inline
+             script just below, before form_embed.js loads. Do not hand edit
+             this block. Edit funnel_content.py and rerun build_funnel.py.
              ================================================================== -->
-        <div class="fallback">
-          <p class="eyebrow">Fallback form. Replace with the GHL embed before launch.</p>
-          <form id="sixteen-form" method="post" action="REPLACE_WITH_GHL_WEBHOOK_URL" style="margin-top:var(--s3)">
-            <label for="first_name">First name</label>
-            <input id="first_name" name="first_name" type="text" autocomplete="given-name" required>
-            <label for="last_name">Surname</label>
-            <input id="last_name" name="last_name" type="text" autocomplete="family-name" required>
-            <label for="email">Email</label>
-            <input id="email" name="email" type="email" autocomplete="email" required>
-            <label for="phone">Phone (optional)</label>
-            <input id="phone" name="phone" type="tel" autocomplete="tel">
-            <input type="hidden" name="tags" value="lm-sixteen,doorway-baseline">
-            <input type="hidden" id="src" name="source" value="direct">
-            <input type="hidden" name="redirect" value="https://angiemarieglobal.github.io/sixteen/thank-you/">
-            <button class="btn btn-solid full" type="submit">Send me Sixteen</button>
-          </form>
-        </div>
+        <iframe
+          data-src="https://links.angiemarieglobal.com/widget/form/AZ81nybTLiPN4tA0wXPe"
+          id="inline-AZ81nybTLiPN4tA0wXPe"
+          data-layout="{'id':'INLINE'}"
+          data-trigger-type="alwaysShow"
+          data-activation-type="alwaysActivated"
+          data-deactivation-type="neverDeactivate"
+          data-form-name="LM 16 · Sixteen"
+          data-layout-iframe-id="inline-AZ81nybTLiPN4tA0wXPe"
+          data-form-id="AZ81nybTLiPN4tA0wXPe"
+          title="LM 16 · Sixteen"
+          scrolling="no"></iframe>
+        <script>
+        /* TRAFFIC SOURCE, HANDED TO GHL.
+           Read ?src= or ?utm_source= off this page and set the iframe src with
+           it appended, before form_embed.js loads. GHL receives the source with
+           the submission, so every lead arrives knowing which reel or which
+           email sent it. The iframe ships with data-src rather than src so this
+           runs once and the form is never loaded twice.
+           Sanitised to a-z 0-9 and hyphens, capped at 24 characters, because
+           this string ends up in a URL and in a tag. */
+        (function(){
+          var el=document.getElementById("inline-AZ81nybTLiPN4tA0wXPe");
+          if(!el) return;
+          var q=new URLSearchParams(window.location.search);
+          var s=(q.get("src")||q.get("utm_source")||"direct").toLowerCase()
+                  .replace(/[^a-z0-9-]/g,"-").slice(0,24);
+          var u=el.getAttribute("data-src");
+          el.setAttribute("src",u+(u.indexOf("?")>-1?"&":"?")+"source="+encodeURIComponent(s));
+        })();
+        </script>
+        <script src="https://links.angiemarieglobal.com/js/form_embed.js"></script>
+        <noscript>
+          <p class="nojs"><a href="https://links.angiemarieglobal.com/widget/form/AZ81nybTLiPN4tA0wXPe">Send me Sixteen</a></p>
+        </noscript>
       </div>
     </div>
   </div>
@@ -460,27 +479,6 @@ if(sticky&&cap){
     sticky.classList.toggle('on',past&&!at);
   };
   window.addEventListener('scroll',onScroll,{passive:true});onScroll();
-}
-var THANKS="https://angiemarieglobal.github.io/sixteen/thank-you/";
-/* traffic source, stamped for GHL. ?src=ig-reel | fb | email | substack | bio */
-var q=new URLSearchParams(window.location.search);
-var s=(q.get('src')||q.get('utm_source')||'direct').toLowerCase()
-        .replace(/[^a-z0-9-]/g,'-').slice(0,24);
-var f=document.getElementById('src'); if(f){f.value=s;}
-var t=document.querySelector('input[name="tags"]'); if(t){t.value=t.value+',src-'+s;}
-
-/* THE FALLBACK HANDOFF.
-   While the GHL embed is not in yet, the button still has to open the gate,
-   otherwise the page ends in a dead end. Native validation runs first, so the
-   required fields must be filled before this fires. Nothing is posted anywhere
-   and nothing is put in the URL. The moment the GHL embed replaces the
-   .fallback block, this handler goes with it and GHL owns the redirect. */
-var form=document.getElementById('sixteen-form');
-if(form){
-  form.addEventListener('submit',function(e){
-    e.preventDefault();
-    window.location.href=THANKS;
-  });
 }
 })();
 </script>
