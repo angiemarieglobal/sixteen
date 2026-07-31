@@ -166,8 +166,11 @@ p+p{margin-top:var(--s2)}
    nothing on this page can reach inside a cross origin iframe. Pale oat behind
    it so a transparent GHL form sits on brand, and a white one reads as a card
    with an oat frame either way. */
-.formcard{background:var(--pale-oat);padding:10px}
-.formcard iframe{width:100%;border:0;display:block;min-height:560px;background:transparent}
+.formcard{background:transparent;padding:0}
+/* min-height is a placeholder for the moment before form_embed.js reports the
+   real height. Keep it BELOW the form's actual height (GHL reports ~525px) or
+   it wins the cascade and leaves dead space under the button. */
+.formcard iframe{width:100%;border:0;display:block;min-height:380px;background:transparent}
 .nojs{padding:var(--s4);text-align:center}
 .nojs a{color:var(--deep-umber);font-weight:600}
 
