@@ -167,17 +167,12 @@ p+p{margin-top:var(--s2)}
    it so a transparent GHL form sits on brand, and a white one reads as a card
    with an oat frame either way. */
 .formcard{background:transparent;padding:0}
-/* HEIGHT, and why it is set this way.
-   form_embed.js is supposed to measure the form and set an inline height. On
-   form pbJlsgtoTV05wrLI67gj it does not report at all, and an iframe with no
-   height collapses to nothing, which is exactly how a live form goes invisible.
-   So the stylesheet carries a real height rather than a placeholder. If
-   form_embed.js ever does report, its INLINE style beats this rule and wins,
-   so the taller-form case still works.
-   min-height stays at 0 deliberately. A min-height above the reported height
-   wins the cascade and leaves dead space under the button. That happened once.
-   If the GHL form gains or loses a field, change this number and rebuild. */
-.formcard iframe{width:100%;border:0;display:block;height:660px;min-height:0;background:transparent}
+/* HEIGHT. form_embed.js measures the form and sets an inline height, 525px on
+   this four field form. That inline style beats this rule, so min-height is
+   only the placeholder for the moment before it lands. Keep it just BELOW the
+   reported height: set it above and it wins the cascade and leaves dead space
+   under the button. */
+.formcard iframe{width:100%;border:0;display:block;min-height:500px;background:transparent}
 .nojs{padding:var(--s4);text-align:center}
 .nojs a{color:var(--deep-umber);font-weight:600}
 
@@ -375,12 +370,17 @@ footer .brand{margin-top:14px;letter-spacing:.26em;font-size:10px;text-transform
                Redirect on submit  https://angiemarieglobal.github.io/sixteen/thank-you/
                Tags on submit      lm-sixteen,doorway-baseline  plus  src-<source>
                Workflow            LM16 · Sixteen · Deliver
-             The traffic source is appended to the iframe src by the inline
-             script just below, before form_embed.js loads. Do not hand edit
-             this block. Edit funnel_content.py and rerun build_funnel.py.
+             form_embed.js does two jobs: it measures the form and sets the
+             real height, and it forwards this page's query string into the
+             form, so ?src= and ?utm_source= reach GHL on their own.
+             DO NOT rewrite the iframe src from JavaScript. form_embed.js
+             re-parents the iframe into .ep-wrapper, and re-parenting an iframe
+             forces a reload. Setting src at runtime races that and the form
+             renders blank. It cost an afternoon on 31 July 2026.
+             Do not hand edit this block. Edit funnel_content.py and rerun.
              ================================================================== -->
         <iframe
-          data-src="https://links.angiemarieglobal.com/widget/form/pbJlsgtoTV05wrLI67gj"
+          src="https://links.angiemarieglobal.com/widget/form/pbJlsgtoTV05wrLI67gj"
           id="inline-pbJlsgtoTV05wrLI67gj"
           data-layout="{'id':'INLINE'}"
           data-trigger-type="alwaysShow"
@@ -391,25 +391,6 @@ footer .brand{margin-top:14px;letter-spacing:.26em;font-size:10px;text-transform
           data-form-id="pbJlsgtoTV05wrLI67gj"
           title="LM 16 · Sixteen"
           scrolling="no"></iframe>
-        <script>
-        /* TRAFFIC SOURCE, HANDED TO GHL.
-           Read ?src= or ?utm_source= off this page and set the iframe src with
-           it appended, before form_embed.js loads. GHL receives the source with
-           the submission, so every lead arrives knowing which reel or which
-           email sent it. The iframe ships with data-src rather than src so this
-           runs once and the form is never loaded twice.
-           Sanitised to a-z 0-9 and hyphens, capped at 24 characters, because
-           this string ends up in a URL and in a tag. */
-        (function(){
-          var el=document.getElementById("inline-pbJlsgtoTV05wrLI67gj");
-          if(!el) return;
-          var q=new URLSearchParams(window.location.search);
-          var s=(q.get("src")||q.get("utm_source")||"direct").toLowerCase()
-                  .replace(/[^a-z0-9-]/g,"-").slice(0,24);
-          var u=el.getAttribute("data-src");
-          el.setAttribute("src",u+(u.indexOf("?")>-1?"&":"?")+"source="+encodeURIComponent(s));
-        })();
-        </script>
         <script src="https://links.angiemarieglobal.com/js/form_embed.js"></script>
         <noscript>
           <p class="nojs"><a href="https://links.angiemarieglobal.com/widget/form/pbJlsgtoTV05wrLI67gj">Send me Sixteen</a></p>
