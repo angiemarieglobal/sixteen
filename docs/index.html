@@ -167,10 +167,17 @@ p+p{margin-top:var(--s2)}
    it so a transparent GHL form sits on brand, and a white one reads as a card
    with an oat frame either way. */
 .formcard{background:transparent;padding:0}
-/* min-height is a placeholder for the moment before form_embed.js reports the
-   real height. Keep it BELOW the form's actual height (GHL reports ~525px) or
-   it wins the cascade and leaves dead space under the button. */
-.formcard iframe{width:100%;border:0;display:block;min-height:380px;background:transparent}
+/* HEIGHT, and why it is set this way.
+   form_embed.js is supposed to measure the form and set an inline height. On
+   form pbJlsgtoTV05wrLI67gj it does not report at all, and an iframe with no
+   height collapses to nothing, which is exactly how a live form goes invisible.
+   So the stylesheet carries a real height rather than a placeholder. If
+   form_embed.js ever does report, its INLINE style beats this rule and wins,
+   so the taller-form case still works.
+   min-height stays at 0 deliberately. A min-height above the reported height
+   wins the cascade and leaves dead space under the button. That happened once.
+   If the GHL form gains or loses a field, change this number and rebuild. */
+.formcard iframe{width:100%;border:0;display:block;height:660px;min-height:0;background:transparent}
 .nojs{padding:var(--s4);text-align:center}
 .nojs a{color:var(--deep-umber);font-weight:600}
 
