@@ -1,25 +1,9 @@
-# sixteen
+# amg-lead-magnets
 
-**Sixteen** for Angie Marie Global. Lead magnet 16, keyword `16`. The guide, the funnel and
-the build scripts in one place, so the whole asset can be rebuilt from scratch two years from
-now without archaeology.
+Lead magnets for Angie Marie Global. One repo, one folder per asset, source and built PDF
+together so a magnet can be rebuilt from scratch two years from now without archaeology.
 
-GitHub Pages serves `docs/` at the repo root. Live at
-**https://angiemarieglobal.github.io/sixteen/**, the same pattern as `permission-audit`,
-`shift-audit` and `capacity-audit`.
-
-## TWO HOSTING WORLDS, AND THEY ARE NOT THE SAME
-
-This caught us once already, so it is written down.
-
-| Host | Serves | Used for |
-|---|---|---|
-| `angiemarieglobal.github.io/sixteen/` | GitHub Pages, this repo | the opt-in, the thank you page, the live scan, the PDF |
-| `angiemarieglobal.com` | the GHL site | `/baseline-audit`, `/recognise`, `/baseline` |
-
-`funnel_content.py` holds both as `PAGES` and `SITE`. Page 19 of the PDF links to the scan on
-Pages. Page 20 links to the audit on the GHL site. Get these the wrong way round and a PDF
-ships with a dead link, and a PDF in the wild cannot be recalled.
+Landing pages are served from `docs/` by GitHub Pages.
 
 ---
 
@@ -49,15 +33,14 @@ A keyword recorded only in a repo is a keyword nobody else can find.
 ## Folder shape
 
 ```
-sixteen/
+amg-lead-magnets/
   README.md
   docs/                          <- GitHub Pages root
-    .nojekyll                    <- stops Jekyll choking the Pages build.
-    index.html                   <- GENERATED. the opt-in page.
-    thank-you/index.html         <- GENERATED. delivery, next step, two upsells.
-    scan/index.html              <- GENERATED. the live interactive scan.
-    AMG-Sixteen.pdf              <- COPIED. the guide, served from the repo.
-    *.jpg                        <- image sources. inlined into the pages at build.
+    sixteen/index.html           <- GENERATED. the opt-in page.
+    sixteen/thank-you/index.html <- GENERATED. delivery, next step, two upsells.
+    sixteen/scan/index.html      <- GENERATED. the live interactive scan.
+    sixteen/AMG-Sixteen.pdf      <- COPIED. the guide, served from the repo.
+    sixteen/*.jpg                <- image sources. inlined into the pages at build.
   lm-16-sixteen/
     build/content.py             <- every word of the PDF. the source of truth.
     build/build_sixteen.py       <- renders the PDF
@@ -65,6 +48,7 @@ sixteen/
     build/funnel_content.py      <- every word and every URL on the three web pages
     build/build_funnel.py        <- renders the three web pages into docs/sixteen/
     build/prepare_assets.py      <- bakes the banner fade, writes cover and web hero
+    build/build_tiles.py         <- renders the sixteen redacted grid tiles
     build/export_copy.py         <- regenerates the readable copy doc
     assets/                      <- source banner and the baked cover
     content/sixteen-copy.md      <- generated. do not hand edit.
@@ -85,6 +69,7 @@ pip install reportlab pikepdf pillow
 python3 prepare_assets.py ../assets/sixteen-banner-source.png
 python3 build_sixteen.py     # -> ../dist/AMG-Sixteen.pdf, script attached
 python3 export_copy.py       # -> ../content/sixteen-copy.md
+python3 build_tiles.py       # -> ../../docs/tile-01..16.jpg  the redacted grid
 python3 build_funnel.py      # -> ../../docs/  all three pages + the PDF
 ```
 
@@ -172,7 +157,7 @@ git init
 git add .
 git commit -m "Sixteen: PDF, landing page, live scan, GHL spec"
 git branch -M main
-git remote add origin git@github.com:angiemarieglobal/sixteen.git
+git remote add origin git@github.com:USERNAME/amg-lead-magnets.git
 git push -u origin main
 ```
 
@@ -204,7 +189,7 @@ it.** Every other viewer shows the page, ticks the boxes, keeps the typing, and 
 not light the clusters. Nothing breaks and nothing looks wrong. The reader counts for
 themselves, which the page tells them to do.
 
-That gap is why the scan also lives on the web at `docs/scan/`, where the ticking,
+That gap is why the scan also lives on the web at `docs/sixteen/scan/`, where the ticking,
 the counter, the cluster states and the closing verdict all move in every browser on every
 device. Page 19 of the PDF links straight to it. Treat the web scan as the primary
 experience and the PDF form as the offline one.
@@ -219,10 +204,10 @@ system, then rerun `python3 build_funnel.py`. One shared stylesheet across all t
 so they cannot drift apart.
 
 ```
-docs/index.html            ->  angiemarieglobal.github.io/sixteen/
-docs/thank-you/index.html  ->  angiemarieglobal.github.io/sixteen/thank-you/
-docs/scan/index.html       ->  angiemarieglobal.github.io/sixteen/scan/
-docs/AMG-Sixteen.pdf       ->  angiemarieglobal.github.io/sixteen/AMG-Sixteen.pdf
+/sixteen/              opt-in
+/sixteen/thank-you/    delivery, next step, two upsells
+/sixteen/scan/         the live interactive scan
+/sixteen/AMG-Sixteen.pdf
 ```
 
 ### The route
@@ -242,19 +227,71 @@ content, keyword 16
 GHL does exactly one job in this funnel: capture the lead and send the email. Every page is
 static and served by GitHub Pages, so nothing can break mid-launch except the form.
 
+### THE GHL EMBED
+
+Live since 31 July 2026. The fallback form is gone.
+
+```
+form      LM 16 - Sixteen        id pbJlsgtoTV05wrLI67gj
+embed     links.angiemarieglobal.com/widget/form/pbJlsgtoTV05wrLI67gj
+resizer   links.angiemarieglobal.com/js/form_embed.js
+```
+
+**Three settings live inside GHL and nothing in this repo can change them.** If any one is
+wrong the funnel breaks and editing HTML will not fix it.
+
+1. Redirect on submit, to `https://angiemarieglobal.github.io/sixteen/thank-you/`
+2. Tags on submit, `lm-sixteen,doorway-baseline`
+3. Workflow `LM16 - Sixteen - Deliver`, sending the guide
+
+### TWO RULES THAT COST AN AFTERNOON
+
+**One. The form card carries no `.rv` reveal, and it never should.**
+
+`.rv` starts an element at opacity 0 with a transform, which puts it on its own compositing
+layer. A cross origin iframe inside that layer loads its document and then never paints. The
+element measures correctly, reports opacity 1 and visibility visible, and shows a blank
+rectangle. Anything that forces a re-composite makes it appear, which is why it looked
+intermittent and impossible to pin down. The form is the conversion element. It arrives with
+the page, not on a scroll cue.
+
+**Two. Never set the iframe `src` from JavaScript.**
+
+`form_embed.js` re-parents the iframe into `.ep-wrapper` inside `.ep-iFrameContainer`, and
+re-parenting an iframe forces a reload. Setting `src` at runtime races that and the form
+renders blank. The iframe ships with a plain `src` and no script touches it.
+
+The cost of rule two is the automatic traffic-source stamping. `?src=` no longer reaches GHL
+from this page. GHL's own embed script is documented to forward the parent page's query
+string into the form, but that is unconfirmed here. **Confirm it on the first real
+submission:** load the page as `?src=ig-reel`, submit, and check whether the source landed on
+the contact. If it did not, add a hidden field in the GHL form and populate it there.
+
+**Height.** `form_embed.js` measures the form and sets an inline height, 525px on this four
+field form. That inline style beats the stylesheet, so `min-height` is only the placeholder
+for the moment before it lands, and must stay just BELOW the reported height. Set it above and
+it wins the cascade and leaves dead space under the button. That happened once at 560px.
+
+**Styling.** The form is a cross origin iframe. Nothing on this page can reach inside it, so
+field styling, button colour and the button label are all edited in GHL, not here. `.formcard`
+is transparent with no padding so the GHL card carries the look on its own.
+
+`C.FIELDS` in `funnel_content.py` is no longer rendered. It stays as the spec of what the GHL
+form must ask for, in order: first name, surname, email, phone optional.
+
 ### The opt-in page, in order
 
 1. **Hero.** The banner full bleed, wordmark standing alone, a FREE 20 PAGES badge, then the
    strap and **one** button. No second option, because a second option is a decision and a
    decision is friction.
 2. **The problem**, in the avatar's own words.
-3. **All sixteen.** Every moment on the page, numbered, nothing held back. The guide is free
-   and holds all sixteen, so the page shows all sixteen. Teasing four of them contradicted
-   the offer and it is gone.
+3. **THE GATE.** Sixteen numbered tiles, redacted. No moment text and no names. The page
+   proves the shape and the count, and nothing else. A capture page that hands over the
+   substance has no reason to capture anything. Locked 31 July 2026.
 4. **The loop**, as a six link chain with the last link inverted.
 5. **See inside.** Four real pages of the PDF, fanned on a tilt.
 6. **The counts.** 16, 6, 1.
-7. **The scan**, offered live before the email is asked for.
+7. **The scan**, sold rather than opened. The CTA goes to `#get`, not to `/scan/`.
 8. **Capture**, on deep umber so the cream form is the brightest thing on screen.
 9. **Who wrote this.**
 10. **The two upsells.**
@@ -271,7 +308,7 @@ data that would have loaded anyway. If that ever matters more than the guarantee
 `data_uri()` in the builder to return the plain filename and the pages go back to external
 images with no other change.
 
-The `.jpg` files stay in `docs/` regardless, because `og:image` needs a real URL for
+The `.jpg` files stay in `docs/sixteen/` regardless, because `og:image` needs a real URL for
 link previews.
 
 ### Regenerate the page previews
@@ -281,17 +318,50 @@ document that no longer exists.
 
 ```bash
 cd lm-16-sixteen/dist
-for pg in 1 3 14 19; do pdftoppm -jpeg -r 130 -f $pg -l $pg AMG-Sixteen.pdf pv; done
+for pg in 1 2 19 20; do pdftoppm -jpeg -r 130 -f $pg -l $pg AMG-Sixteen.pdf pv; done
 ```
 
 Resize each to 520px wide, save into `docs/` as
-`preview-cover|code|escape|scan.jpg`, then rerun `build_funnel.py`.
+`preview-cover|howto|scan|close.jpg`, then rerun `build_funnel.py`.
 
-### One URL still needs confirming
+Pages 1, 2, 19 and 20 are chosen on purpose. They prove the craft and reveal no moment and
+no name. `preview-code.jpg` and `preview-escape.jpg` came from pages 3 and 14, showed a
+named pattern, and were deleted from the repo on 31 July 2026. Do not bring them back.
 
-`BASELINE_URL` in `funnel_content.py` is a placeholder. The Baseline Membership slug is not
-recorded in amg-ecosystem, and the old `/baseline` URL is **retired** and must never be used.
-Confirm the real slug and change the one line.
+### THE REDACTED TILES, AND WHY THE BLUR IS IN THE PIXELS
+
+Each grid tile carries a JPEG of the real moment, typeset on brand oat, blurred by
+`build_tiles.py` before the file is written. Rerun that script whenever `content.py` changes.
+
+**Never do this with a CSS blur.** A CSS filter is a costume. One line removed in dev tools and
+all sixteen moments are readable, which walks straight through the gate. A baked blur has no
+sharp layer to recover: what ships is a JPEG of soft shapes. The tile tells the truth about
+being real text and still gives nothing away.
+
+Blur radius is 8.5 at 560px wide, tested. 5.5 was still readable. 10 washed out to a smudge and
+stopped reading as words at all.
+
+### THE GATE, and how far it reaches
+
+The opt-in page shows sixteen redacted tiles and links to nothing but the form. The moments,
+the names, the PDF and the live scan all sit on the far side of `/thank-you/`.
+
+This is a friction gate, not a lock. Every page here is static, so a determined person can
+type `/sixteen/scan/` into a browser and reach it. That is true of every static lead magnet
+on the internet and it does not matter: the scan is a list of sixteen numbers and six cluster
+names, and without the guide it says nothing. The value being protected is the words, and the
+words only ever arrive by email.
+
+If the scan ever needs a real lock, the move is a GHL-hosted page behind the workflow, not a
+token in a static URL.
+
+### URLs, confirmed
+
+`BASELINE_URL` is `https://www.angiemarieglobal.com/baseline` and the page is live, confirmed
+31 July 2026. `RECOGNISE_URL` is `https://www.angiemarieglobal.com/recognise`, also live. Both
+upsell cards were written against those pages after reading them. **Read the destination page
+before an upsell card ships.** That rule exists because a card once promised a monthly live
+transmission that the sales page did not sell.
 
 No page in this funnel prints a price. Recognise and the membership carry their own pricing
 on their own pages, which also means these pages stay correct if pricing moves.
