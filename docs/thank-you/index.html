@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sixteen is yours | Sixteen</title>
+<title>Sixteen Is Yours | Sixteen</title>
 <meta name="description" content="Sixteen is on its way. Download it here, then run the scan.">
 <meta name="robots" content="noindex, follow">
 <link rel="canonical" href="https://angiemarieglobal.github.io/sixteen/thank-you/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Sixteen is yours | Sixteen">
+<meta property="og:title" content="Sixteen Is Yours | Sixteen">
 <meta property="og:description" content="Sixteen is on its way. Download it here, then run the scan.">
 <meta property="og:locale" content="en_AU">
 <meta name="twitter:card" content="summary_large_image">
@@ -56,8 +56,8 @@ h1,h2,h3,.serif{font-family:'Forum',Georgia,serif;font-weight:400;line-height:1.
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:10px;
   text-decoration:none;cursor:pointer;border:0;text-align:center;
-  padding:20px 34px;font-family:'Montserrat',sans-serif;font-weight:600;
-  text-transform:uppercase;letter-spacing:.2em;font-size:11.5px;
+  padding:26px 44px;font-family:'Montserrat',sans-serif;font-weight:600;
+  text-transform:uppercase;letter-spacing:.2em;font-size:13px;
   transition:background .18s,color .18s,border-color .18s,transform .18s;
 }
 .btn:active{transform:translateY(1px)}
@@ -67,7 +67,7 @@ h1,h2,h3,.serif{font-family:'Forum',Georgia,serif;font-weight:400;line-height:1.
 .btn-gold:hover{background:var(--amber-ember);color:var(--pale-oat)}
 .btn-line{background:transparent;color:var(--deep-umber);border:1px solid var(--sand-stone)}
 .btn-line:hover{border-color:var(--golden-sand);color:var(--warm-clay)}
-.btn-lg{padding:23px 40px;font-size:12.5px}
+.btn-lg{padding:30px 52px;font-size:14.5px}
 .full{width:100%}
 
 section{padding:var(--s6) 0}
@@ -114,8 +114,10 @@ p+p{margin-top:var(--s2)}
 .cell .m{font-size:13.5px;line-height:1.55;color:var(--espresso)}
 .cell.locked{min-height:132px}
 .cell.locked:hover{background:var(--pale-oat)}
-.blur{display:flex;flex-direction:column;gap:9px;margin-top:2px}
-.bar{display:block;height:8px;background:var(--ivory-glow);border-radius:1px}
+/* The blur is already in the JPEG. Nothing here softens or sharpens it, so no
+   stylesheet edit can ever expose the words. Opacity only, to sit the type back
+   into the oat so it reads as withheld rather than as a broken image. */
+.redact{width:100%;height:auto;opacity:.88}
 .locknote{
   margin-top:var(--s4);display:inline-flex;align-items:center;gap:10px;
   font-family:'Montserrat',system-ui,sans-serif;font-size:11px;letter-spacing:.16em;
@@ -162,16 +164,25 @@ p+p{margin-top:var(--s2)}
 .capture p{color:var(--ivory-glow)}
 .capture .eyebrow{color:var(--golden-sand)}
 .capgrid{display:grid;grid-template-columns:1fr 1fr;gap:var(--s6);align-items:center}
-.formcard{background:var(--pale-oat);padding:8px}
-.formcard iframe{width:100%;border:0;display:block;min-height:430px}
-.fallback{padding:var(--s4) var(--s3)}
-.fallback .eyebrow{color:var(--sand-stone);font-size:9.5px}
-.fallback label{display:block;margin:0 0 8px;color:var(--warm-clay);font-weight:600;text-transform:uppercase;letter-spacing:.2em;font-size:10.5px}
-.fallback input{
-  width:100%;padding:16px;margin-bottom:var(--s3);border:1px solid var(--sand-stone);
-  background:#fff;color:var(--espresso);font-family:'Montserrat',sans-serif;font-size:16px;
-}
-.fallback input:focus{outline:2px solid var(--golden-sand);border-color:var(--golden-sand)}
+/* The GHL embed lives in here. Style the form itself inside GHL, not here:
+   nothing on this page can reach inside a cross origin iframe.
+
+   THE FORM CARD CARRIES NO .rv REVEAL, AND IT NEVER SHOULD.
+   .rv starts an element at opacity 0 with a transform, which puts it on its own
+   compositing layer. A cross origin iframe inside that layer loads its document
+   and then never paints: the element measures correctly, reports opacity 1 and
+   visibility visible, and shows a blank rectangle. Anything that forces a
+   re-composite makes it appear, which is why it looked intermittent. The form is
+   the conversion element. It arrives with the page, not on a scroll cue. */
+.formcard{background:transparent;padding:0}
+/* HEIGHT. form_embed.js measures the form and sets an inline height, 525px on
+   this four field form. That inline style beats this rule, so min-height is
+   only the placeholder for the moment before it lands. Keep it just BELOW the
+   reported height: set it above and it wins the cascade and leaves dead space
+   under the button. */
+.formcard iframe{width:100%;border:0;display:block;min-height:500px;background:transparent}
+.nojs{padding:var(--s4);text-align:center}
+.nojs a{color:var(--deep-umber);font-weight:600}
 
 /* AUTHOR */
 .who{display:grid;grid-template-columns:.85fr 1.15fr;gap:var(--s6);align-items:center}
@@ -233,8 +244,8 @@ footer .brand{margin-top:14px;letter-spacing:.26em;font-size:10px;text-transform
 <div class="tyhead">
   <div class="wrap">
     <p class="eyebrow">It is on its way</p>
-    <h1>Sixteen is yours</h1>
-    <p>The email is landing now. If it has not arrived in five minutes, check the promotions tab, and mark it as not spam so the rest reaches you.</p>
+    <h1>Sixteen Is Yours</h1>
+    <p>The email is landing now. If it has not arrived in five minutes, check your 'junk mail', and mark it as not spam so the rest reaches you.</p>
   </div>
 </div>
 <div class="bars"><i></i><i></i><i></i><i></i></div>
@@ -250,12 +261,14 @@ footer .brand{margin-top:14px;letter-spacing:.26em;font-size:10px;text-transform
 
     <div class="read" style="margin-top:var(--s6)">
       <p class="eyebrow eb-clay rv">Start here</p>
+      <h2 class="rv" style="margin-top:var(--s2)">Your Next Steps</h2>
+      <hr class="hr rv">
       <div class="steps">
       <div class="step-i rv"><b>01</b><span>Open it and read the moments. Do not skip to the names.</span></div>
       <div class="step-i rv"><b>02</b><span>When one lands, keep reading down that page. The name is at the bottom.</span></div>
       <div class="step-i rv"><b>03</b><span>Then run the scan and look at the shape of it.</span></div>
       </div>
-      <a class="btn btn-line rv" style="margin-top:var(--s4)" href="../scan/">Run the live scan</a>
+      <a class="btn btn-line btn-lg rv" style="margin-top:var(--s4)" href="../scan/">Run the live scan</a>
     </div>
   </div>
 </section>
@@ -264,18 +277,18 @@ footer .brand{margin-top:14px;letter-spacing:.26em;font-size:10px;text-transform
   <div class="wrap">
     <div class="read">
       <p class="eyebrow rv">And when you are ready</p>
-      <h2 class="rv" style="margin-top:var(--s2)">The names are the first half</h2>
+      <h2 class="rv" style="margin-top:var(--s2)">The Names Are The First Half</h2>
       <hr class="hr rv">
       <p class="rv after">The second half is the loop underneath them, and that is one specific belief in one specific place generating all of it. The free Baseline Audit takes a few minutes and reads what is running underneath every one of the sixteen. Not the pattern. The setting.</p>
-      <a class="btn btn-gold rv" style="margin-top:var(--s4)" href="https://www.angiemarieglobal.com/baseline-audit">Take the free Baseline Audit</a>
+      <a class="btn btn-gold btn-lg rv" style="margin-top:var(--s4)" href="https://www.angiemarieglobal.com/baseline-audit">Take the free Baseline Audit</a>
     </div>
   </div>
 </section>
 
 <section class="oat">
   <div class="wrap">
-    <p class="eyebrow eb-clay rv">Where this goes next</p>
-    <h2 class="rv" style="margin-top:var(--s2)">Two doors, and they open in order</h2>
+    <p class="eyebrow eb-clay rv">Your next steps...</p>
+    <h2 class="rv" style="margin-top:var(--s2)">Two Doorways, And They Open In This Order</h2>
     <hr class="hr rv">
     <p class="read rv after">Sixteen gives you the names. These two are what happens after you have them.</p>
     <div class="nextrow">
@@ -284,14 +297,14 @@ footer .brand{margin-top:14px;letter-spacing:.26em;font-size:10px;text-transform
         <h3>Recognise</h3>
         <p class="line">A loop you can see has already lost its authority.</p>
         <p class="body">Three private audio transmissions, eyes closed, where you catch your own loop running live rather than hearing it explained. Then The Loop Map, three pages you fill in by hand, because the hand matters more than the paper. And the ninety-second practice that brings you back to centre in any room, any conversation, any Monday. About thirty-eight minutes of audio. Instant access, yours to keep.</p>
-        <a class="btn btn-solid" href="https://www.angiemarieglobal.com/recognise">Go to Recognise</a>
+        <a class="btn btn-solid btn-lg full" href="https://www.angiemarieglobal.com/recognise">Go to Recognise</a>
       </div>
       <div class="door rv">
         <p class="step">Step Two</p>
         <h3>Baseline</h3>
         <p class="line">Read the blueprint instead of arguing with the print-out.</p>
         <p class="body">One Key Code a week, video and audio, short enough to receive while the kettle boils. Fifty-two of them across a year, and together they walk one full turn of the loop: see it, feel it, rewire it, hold the new floor. Plus the library that keeps growing, and a quiet room where everyone moves through the same Key Code in the same week. No tiers and no countdown. One steady room for as long as you stay.</p>
-        <a class="btn btn-solid" href="https://www.angiemarieglobal.com/baseline">Go to Baseline</a>
+        <a class="btn btn-solid btn-lg full" href="https://www.angiemarieglobal.com/baseline">Go to Baseline</a>
       </div>
     </div>
   </div>
