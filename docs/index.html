@@ -189,17 +189,21 @@ p+p{margin-top:var(--s2)}
 .who img{border-bottom:4px solid var(--golden-sand)}
 .who .sig{font-family:'Forum',Georgia,serif;font-size:23px;color:var(--deep-umber);margin-top:var(--s3)}
 
-/* THE TWO UPSELLS */
-.nextrow{display:grid;grid-template-columns:1fr 1fr;gap:var(--s3);margin-top:var(--s5)}
+/* THE ONE UPSELL */
+.nextrow{display:grid;grid-template-columns:1fr;gap:var(--s3);margin:var(--s5) auto 0;max-width:660px}
 .door{
   background:var(--pale-oat);border-top:3px solid var(--golden-sand);
-  padding:var(--s4) var(--s4) var(--s5);display:flex;flex-direction:column;
+  padding:var(--s5) var(--s5) var(--s5);display:flex;flex-direction:column;
+  align-items:center;text-align:center;
 }
 .door .step{color:var(--sand-stone);font-weight:600;text-transform:uppercase;letter-spacing:.3em;font-size:9.5px}
-.door h3{font-size:clamp(28px,3.4vw,38px);color:var(--deep-umber);margin-top:14px}
-.door .line{font-family:'Forum',Georgia,serif;font-size:19px;color:var(--warm-clay);margin-top:12px;line-height:1.4}
-.door .body{font-size:15px;line-height:1.66;margin-top:var(--s3);flex:1}
-.door .btn{margin-top:var(--s4)}
+.door h3{font-size:clamp(30px,3.6vw,40px);color:var(--deep-umber);margin-top:14px}
+.door .line{font-family:'Forum',Georgia,serif;font-size:20px;color:var(--warm-clay);margin-top:12px;line-height:1.45;max-width:30ch}
+.door .body{font-size:15px;line-height:1.66;margin-top:var(--s3);max-width:54ch}
+.door .btn{margin-top:var(--s4);align-self:center}
+.nextsec .wrap{text-align:center}
+.nextsec .hr{margin-left:auto;margin-right:auto}
+.nextsec .read{margin-left:auto;margin-right:auto}
 
 /* THANK YOU */
 .tyhead{background:var(--deep-umber);color:var(--pale-oat);padding:var(--s6) 0 var(--s5);text-align:center}
@@ -223,7 +227,7 @@ footer .brand{margin-top:14px;letter-spacing:.26em;font-size:10px;text-transform
 @media (max-width:940px){.sticky.on{display:block}}
 
 @media (max-width:940px){
-  .split,.capgrid,.who,.nextrow{grid-template-columns:1fr;gap:var(--s5)}
+  .split,.capgrid,.who{grid-template-columns:1fr;gap:var(--s5)}
   .grid16{grid-template-columns:repeat(2,1fr)}
   .pages{grid-template-columns:repeat(2,1fr)}
   .gets{grid-template-columns:1fr}
@@ -425,26 +429,18 @@ footer .brand{margin-top:14px;letter-spacing:.26em;font-size:10px;text-transform
   </div>
 </section>
 
-<section class="oat">
+<section class="oat nextsec">
   <div class="wrap">
-    <p class="eyebrow eb-clay rv">Your next steps...</p>
-    <h2 class="rv" style="margin-top:var(--s2)">Two Doorways, And They Open In The Following Order</h2>
+    <p class="eyebrow eb-clay rv">Your next step...</p>
+    <h2 class="rv" style="margin-top:var(--s2)">One Door, And You Are Already Standing At It</h2>
     <hr class="hr rv">
-    <p class="read rv after">Sixteen gives you the names. These two are what happens after you have them.</p>
+    <p class="read rv after">Sixteen gives you the names. Recognise is what happens once you have them, and it is the only next step there is.</p>
     <div class="nextrow">
       <div class="door rv">
-        <p class="step">Step One</p>
         <h3>Recognise</h3>
         <p class="line">A loop you can see has already lost its authority.</p>
         <p class="body">Three private audio transmissions, eyes closed, where you catch your own loop running live rather than hearing it explained. Then The Loop Map, three pages you fill in by hand, because the hand matters more than the paper. And the ninety-second practice that brings you back to centre in any room, any conversation, any Monday. About thirty-eight minutes of audio. Instant access, yours to keep.</p>
-        <a class="btn btn-solid btn-lg full" href="https://www.angiemarieglobal.com/recognise">Go to Recognise</a>
-      </div>
-      <div class="door rv">
-        <p class="step">Step Two</p>
-        <h3>Baseline</h3>
-        <p class="line">Read the blueprint instead of arguing with the print-out.</p>
-        <p class="body">One Key Code a week, video and audio, short enough to receive while the kettle boils. Fifty-two of them across a year, and together they walk one full turn of the loop: see it, feel it, rewire it, hold the new floor. Plus the library that keeps growing, and a quiet room where everyone moves through the same Key Code in the same week. No tiers and no countdown. One steady room for as long as you stay.</p>
-        <a class="btn btn-solid btn-lg full" href="https://www.angiemarieglobal.com/baseline">Go to Baseline</a>
+        <a class="btn btn-solid btn-lg" href="https://www.angiemarieglobal.com/recognise">Go to Recognise</a>
       </div>
     </div>
   </div>
