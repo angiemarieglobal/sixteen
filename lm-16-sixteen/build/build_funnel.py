@@ -588,17 +588,8 @@ def build_thanks():
   </div>
 </section>
 
-<section class="dark">
-  <div class="wrap">
-    <div class="read">
-      <p class="eyebrow rv">{C.TY_AUDIT_EYEBROW}</p>
-      <h2 class="rv" style="margin-top:var(--s2)">{C.TY_AUDIT_TITLE}</h2>
-      <hr class="hr rv">
-      <p class="rv after">{C.TY_AUDIT_BODY}</p>
-      <a class="btn btn-gold rv" style="margin-top:var(--s4)" href="{C.AUDIT_URL}">{C.TY_AUDIT_CTA}</a>
-    </div>
-  </div>
-</section>
+<!-- Baseline Audit block removed 19 Sep 2026. The thank you page carries one ask only,
+     and that ask is Recognise, rendered by upsells() below. -->
 """
     html += upsells()
     html += foot()
