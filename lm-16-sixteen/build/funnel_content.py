@@ -189,12 +189,14 @@ WHO_BODY = [
 ]
 
 # --------------------------------------------------------------------------- #
-# THE TWO UPSELLS. Bottom of every page. No prices, per amg-ecosystem.
+# THE ONE UPSELL. Bottom of every page. No prices, per amg-ecosystem.
+# Baseline removed 19 Sep 2026. One page, one next step, and it is Recognise.
 # --------------------------------------------------------------------------- #
 
 NEXT_EYEBROW = "Where this goes next"
-NEXT_TITLE = "Two doors, and they open in order"
-NEXT_LEAD = ("Sixteen gives you the names. These two are what happens after you have them.")
+NEXT_TITLE = "One door, and you are already standing at it"
+NEXT_LEAD = ("Sixteen gives you the names. Recognise is what you do with them, and it is the "
+             "only step that comes next.")
 
 UPSELLS = [
     dict(
@@ -209,19 +211,6 @@ UPSELLS = [
              "yours to keep.",
         cta="Go to Recognise",
         url_key="RECOGNISE_URL",
-    ),
-    dict(
-        step="Two",
-        name="Baseline",
-        line="Read the blueprint instead of arguing with the print-out.",
-        body="One Key Code a week, video and audio, short enough to receive while the kettle "
-             "boils. Fifty-two of them across a year, and together they walk one full turn of "
-             "the loop: see it, feel it, rewire it, hold the new floor. Plus the library that "
-             "keeps growing, and a quiet room where everyone moves through the same Key Code "
-             "in the same week. No tiers and no countdown. One steady room for as long as "
-             "you stay.",
-        cta="Go to Baseline",
-        url_key="BASELINE_URL",
     ),
 ]
 

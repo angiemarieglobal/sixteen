@@ -196,17 +196,18 @@ p+p{margin-top:var(--s2)}
 .who img{border-bottom:4px solid var(--golden-sand)}
 .who .sig{font-family:'Forum',Georgia,serif;font-size:23px;color:var(--deep-umber);margin-top:var(--s3)}
 
-/* THE TWO UPSELLS */
-.nextrow{display:grid;grid-template-columns:1fr 1fr;gap:var(--s3);margin-top:var(--s5)}
+/* THE ONE UPSELL */
+.nextrow{display:grid;grid-template-columns:1fr;gap:var(--s3);margin:var(--s5) auto 0;max-width:660px}
 .door{
   background:var(--pale-oat);border-top:3px solid var(--golden-sand);
-  padding:var(--s4) var(--s4) var(--s5);display:flex;flex-direction:column;
+  padding:var(--s5) var(--s5) var(--s5);display:flex;flex-direction:column;
+  align-items:center;text-align:center;
 }
 .door .step{color:var(--sand-stone);font-weight:600;text-transform:uppercase;letter-spacing:.3em;font-size:9.5px}
-.door h3{font-size:clamp(28px,3.4vw,38px);color:var(--deep-umber);margin-top:14px}
-.door .line{font-family:'Forum',Georgia,serif;font-size:19px;color:var(--warm-clay);margin-top:12px;line-height:1.4}
-.door .body{font-size:15px;line-height:1.66;margin-top:var(--s3);flex:1}
-.door .btn{margin-top:var(--s4)}
+.door h3{font-size:clamp(30px,3.6vw,40px);color:var(--deep-umber);margin-top:14px}
+.door .line{font-family:'Forum',Georgia,serif;font-size:20px;color:var(--warm-clay);margin-top:12px;line-height:1.45;max-width:30ch}
+.door .body{font-size:15px;line-height:1.66;margin-top:var(--s3);max-width:54ch}
+.door .btn{margin-top:var(--s4);align-self:center}
 
 /* THANK YOU */
 .tyhead{background:var(--deep-umber);color:var(--pale-oat);padding:var(--s6) 0 var(--s5);text-align:center}
@@ -230,7 +231,7 @@ footer .brand{margin-top:14px;letter-spacing:.26em;font-size:10px;text-transform
 @media (max-width:940px){.sticky.on{display:block}}
 
 @media (max-width:940px){
-  .split,.capgrid,.who,.nextrow{grid-template-columns:1fr;gap:var(--s5)}
+  .split,.capgrid,.who{grid-template-columns:1fr;gap:var(--s5)}
   .grid16{grid-template-columns:repeat(2,1fr)}
   .pages{grid-template-columns:repeat(2,1fr)}
   .gets{grid-template-columns:1fr}
@@ -294,7 +295,6 @@ def upsells(base=""):
     for u in C.UPSELLS:
         cards += f"""
       <div class="door rv">
-        <p class="step">Step {u['step']}</p>
         <h3>{u['name']}</h3>
         <p class="line">{u['line']}</p>
         <p class="body">{u['body']}</p>
