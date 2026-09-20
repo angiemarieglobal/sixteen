@@ -604,7 +604,17 @@ def build_thanks():
         C.THANKS_URL,
         noindex=True,
     )
+    hero = data_uri(C.HERO_IMG) if hasattr(C, "HERO_IMG") else data_uri("sixteen-hero.jpg")
     html += f"""
+<header class="hero">
+  <div class="shot">
+    <img src="{hero}" width="1280" height="720" fetchpriority="high"
+         alt="Sixteen. Golden hour on the sand beneath the cliffs.">
+    <p class="badge eyebrow">{C.BADGE}</p>
+  </div>
+  <div class="bars"><i></i><i></i><i></i><i></i></div>
+</header>
+
 <div class="tyhead">
   <div class="wrap">
     <p class="eyebrow">{C.TY_BADGE}</p>
