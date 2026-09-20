@@ -143,8 +143,23 @@ p+p{margin-top:var(--s2)}
 
 /* HERO */
 .hero{position:relative;background:var(--deep-umber)}
-.hero .shot{position:relative}
-.hero .shot img{width:100%}
+.hero .shot{position:relative;overflow:hidden}
+.hero .shot img{width:100%;display:block}
+/* The light that moves across the wordmark. Overlay blend, so it lifts the pale
+   letters and barely touches the sand behind them. Two bands, continuous. */
+.hero .shot::before,.hero .shot::after{
+  content:"";position:absolute;top:0;bottom:0;left:-46%;width:34%;z-index:1;
+  background:linear-gradient(100deg,rgba(255,252,246,0) 0%,rgba(255,252,246,.25) 34%,rgba(255,252,246,1) 50%,rgba(255,252,246,.25) 66%,rgba(255,252,246,0) 100%);
+  /* held to the band the wordmark lives in, feathered top and bottom so no edge shows */
+  -webkit-mask-image:linear-gradient(to bottom,transparent 41%,#000 52%,#000 84%,transparent 93%);
+  mask-image:linear-gradient(to bottom,transparent 41%,#000 52%,#000 84%,transparent 93%);
+  transform:skewX(-14deg);mix-blend-mode:overlay;pointer-events:none;
+  animation:hero-shimmer 4.4s linear infinite;
+}
+.hero .shot::before{animation-delay:-2.2s}
+@keyframes hero-shimmer{from{left:-46%}to{left:122%}}
+@media (prefers-reduced-motion:reduce){.hero .shot::before,.hero .shot::after{animation:none;opacity:0}}
+.hero .badge{z-index:2}
 .hero .badge{
   position:absolute;top:var(--s3);left:var(--s3);
   background:var(--pale-oat);color:var(--deep-umber);
